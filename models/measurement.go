@@ -8,6 +8,8 @@ type Measurement struct {
 	O2sat       int     `gorm:"not null"`
 	Systolic    int     `gorm:"not null"`
 	Diastolic   int     `gorm:"not null"`
-	// SymptomID   uint
+
+	UserID  uint `gorm:"not null"`
+	User    User
 	Symptom []Symptom `gorm:"many2many:measurement_symptom"`
 }

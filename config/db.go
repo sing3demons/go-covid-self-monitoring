@@ -7,14 +7,19 @@ import (
 	"gorm.io/gorm"
 )
 
-func InitializeDB() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("db.db"), &gorm.Config{})
+var db *gorm.DB
+
+func InitializeDB() {
+	database, err := gorm.Open(sqlite.Open("db.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
 
-	// db.Migrator().DropTable(&models.Measurement{})
-	db.AutoMigrate(&models.Measurement{}, &models.Symptom{}, &models.User{})
+	// db.Migrator().DropTable(&models.Measurement{}, &models.User{})
+	database.AutoMigrate(&models.Measurement{}, &models.Symptom{}, &models.User{})
 
+	db = database
+}
+func GetDB() *gorm.DB {
 	return db
 }

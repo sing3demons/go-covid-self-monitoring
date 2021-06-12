@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github/sing3demons/covid-self-monitoring/config"
 	"github/sing3demons/covid-self-monitoring/routes"
 	"log"
 	"os"
@@ -16,6 +17,8 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+
+	config.InitializeDB()
 
 	app := fiber.New()
 	app.Use(recover.New())

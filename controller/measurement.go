@@ -2,6 +2,8 @@ package controller
 
 import (
 	"github/sing3demons/covid-self-monitoring/models"
+	"github/sing3demons/covid-self-monitoring/utils"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
@@ -26,10 +28,16 @@ type creatMeasurement struct {
 }
 
 type measurementResponse struct {
-	Temperature float64 `json:"temperature" `
-	O2sat       int     `json:"o2sat" `
-	Systolic    int     `json:"systolic"`
-	Diastolic   int     `json:"diastolic"`
+	CreatedAt   time.Time `json:"created_at"`
+	Temperature float64   `json:"temperature" `
+	O2sat       int       `json:"o2sat" `
+	Systolic    int       `json:"systolic"`
+	Diastolic   int       `json:"diastolic"`
+
+	UserID uint `json:"user_id"`
+	User   struct {
+		Name string `json:"name"`
+	} `json:"user"`
 
 	Symptom []struct {
 		ID   uint   `json:"id"`
@@ -43,7 +51,7 @@ func NewMeasurementController(db *gorm.DB) MeasurementController {
 
 func (m *measurementController) Find(ctx *fiber.Ctx) error {
 	measurement := []models.Measurement{}
-	if err := m.DB.Preload("Symptom").Order("id desc").Find(&measurement).Error; err != nil {
+	if err := m.DB.Preload("User").Preload("Symptom").Order("id desc").Find(&measurement).Error; err != nil {
 		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err})
 	}
 
@@ -58,6 +66,8 @@ func (m *measurementController) Create(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	user, _ := utils.GetLocalsUser(ctx)
+
 	symptomID := form.SymptomID
 	symptoms := make([]models.Symptom, len(symptomID))
 	for index, id := range symptomID {
@@ -65,7 +75,7 @@ func (m *measurementController) Create(ctx *fiber.Ctx) error {
 		symptoms[index] = models.Symptom{ID: id}
 	}
 
-	var measurement = models.Measurement{Symptom: symptoms}
+	var measurement = models.Measurement{Symptom: symptoms, UserID: user.ID}
 	copier.Copy(&measurement, &form)
 
 	if err := m.DB.Create(&measurement).Error; err != nil {
