@@ -29,8 +29,11 @@ func Serve(app *fiber.App) {
 	symptomGroup := v1.Group("symptom")
 	symptomGroup.Use(authenticate)
 	{
-		symptomGroup.Get("", symptomController.Find)
+		symptomGroup.Get("", symptomController.FindAll)
+		symptomGroup.Get("/:id", symptomController.FindOne)
 		symptomGroup.Post("", symptomController.Create)
+		symptomGroup.Put("/:id", symptomController.Update)
+		symptomGroup.Delete("/:id", symptomController.Delete)
 	}
 
 	authController := controller.NewAuthController(db)
